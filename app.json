@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Dotly",
+    "slug": "dotly",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
+    "android": {
+      "package": "com.dotly.app",
+      "permissions": [
+        "SET_WALLPAPER"
+      ]
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "552292b9-fa69-401e-8091-334fd298cb14"
+      }
+    }
+  }
+}
