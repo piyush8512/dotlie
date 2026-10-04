@@ -1,19 +1,34 @@
 {
   "expo": {
-    "name": "Dotly",
+    "name": "Dotlie",
     "slug": "dotly",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#000000",
+    "icon": "./assets/icon.png",
     "android": {
-      "package": "com.dotly.app",
+      "package": "com.dotlie.app",
       "permissions": [
+        "SET_WALLPAPER",
         "SET_WALLPAPER"
-      ]
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      }
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#000000",
+          "image": "./assets/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ]
     ],
     "extra": {
       "router": {
@@ -22,6 +37,13 @@
       "eas": {
         "projectId": "552292b9-fa69-401e-8091-334fd298cb14"
       }
-    }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/552292b9-fa69-401e-8091-334fd298cb14"
+    },
+    "ios": {}
   }
 }

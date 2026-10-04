@@ -14,6 +14,8 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: "#000" },
           }}
         >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="onboarding" />
           <Stack.Screen name="(tabs)" />
         </Stack>
       </DotlyProvider>

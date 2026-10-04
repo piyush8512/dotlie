@@ -19,14 +19,11 @@ import TrackerModal from "../components/TrackerModal";
 import TrackerActionModal from "../components/TrackerActionModal";
 
 export default function HomeScreen() {
-  const { state, addTracker, removeTracker, setEntry } =
-    useDotly();
+  const { state, addTracker, removeTracker, setEntry } = useDotly();
 
   const [adding, setAdding] = useState(false);
-  const [selectedTracker, setSelectedTracker] =
-    useState<any>(null);
-  const [actionVisible, setActionVisible] =
-    useState(false);
+  const [selectedTracker, setSelectedTracker] = useState<any>(null);
+  const [actionVisible, setActionVisible] = useState(false);
 
   const router = useRouter();
 
@@ -93,29 +90,18 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={styles.root}
-      edges={["top", "left", "right"]}
-    >
+    <SafeAreaView style={styles.root} edges={["top", "left", "right"]}>
       <View style={styles.header}>
         <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>
-            {greeting}, Piyush 👋
-          </Text>
+          <Text style={styles.greeting}>{greeting}, Piyush</Text>
 
-          <Text style={styles.subtitle}>
-            Small steps every day add up.
-          </Text>
+          <Text style={styles.subtitle}>Small steps every day add up.</Text>
         </View>
 
         <View style={styles.streakContainer}>
-          <Text style={styles.streak}>
-            {streak}
-          </Text>
+          <Text style={styles.streak}>{streak}</Text>
 
-          <Text style={styles.streakLabel}>
-            day streak
-          </Text>
+          <Text style={styles.streakLabel}>day streak</Text>
         </View>
       </View>
 
@@ -125,62 +111,31 @@ export default function HomeScreen() {
       >
         {state.trackers.length === 0 && (
           <View style={styles.emptyContainer}>
-  
-
-            <Text style={styles.emptyTitle}>
-              Build your daily rhythm
-            </Text>
+            <Text style={styles.emptyTitle}>Build your daily rhythm</Text>
 
             <Text style={styles.emptyDescription}>
-              Track the little things that matter to
-              you. Start with something simple and
-              build from there.
+              Track the little things that matter to you. Start with something
+              simple and build from there.
             </Text>
 
-            <Text style={styles.suggestionTitle}>
-              YOU COULD TRACK
-            </Text>
+            <Text style={styles.suggestionTitle}>YOU COULD TRACK</Text>
 
             <View style={styles.suggestions}>
-              <Suggestion
-                icon="water-outline"
-                title="Drink water"
-              />
+              <Suggestion icon="water-outline" title="Drink water" />
 
-              <Suggestion
-                icon="book-outline"
-                title="Read"
-              />
+              <Suggestion icon="book-outline" title="Read" />
 
-              <Suggestion
-                icon="barbell-outline"
-                title="Exercise"
-              />
+              <Suggestion icon="barbell-outline" title="Exercise" />
 
-              <Suggestion
-                icon="leaf-outline"
-                title="Meditate"
-              />
+              <Suggestion icon="leaf-outline" title="Meditate" />
 
-              <Suggestion
-                icon="logo-github"
-                title="GitHub"
-              />
+              <Suggestion icon="logo-github" title="GitHub" />
 
-              <Suggestion
-                icon="code-slash-outline"
-                title="Keep coding"
-              />
+              <Suggestion icon="code-slash-outline" title="Keep coding" />
 
-              <Suggestion
-                icon="walk-outline"
-                title="Go for a walk"
-              />
+              <Suggestion icon="walk-outline" title="Go for a walk" />
 
-              <Suggestion
-                icon="moon-outline"
-                title="Sleep on time"
-              />
+              <Suggestion icon="moon-outline" title="Sleep on time" />
             </View>
 
             <Text style={styles.emptyHint}>
@@ -190,12 +145,9 @@ export default function HomeScreen() {
         )}
 
         {state.trackers.map((tracker) => {
-          const value =
-            state.entries[tracker.id]?.[today];
+          const value = state.entries[tracker.id]?.[today];
 
-          const done =
-            value !== undefined &&
-            isDone(tracker, value);
+          const done = value !== undefined && isDone(tracker, value);
 
           return (
             <Pressable
@@ -204,30 +156,21 @@ export default function HomeScreen() {
                 styles.card,
                 pressed && styles.cardPressed,
               ]}
-              onPress={() =>
-                handleTrackerPress(tracker)
-              }
-              onLongPress={() =>
-                handleTrackerLongPress(tracker)
-              }
+              onPress={() => handleTrackerPress(tracker)}
+              onLongPress={() => handleTrackerLongPress(tracker)}
               delayLongPress={450}
             >
               <View
                 style={[
                   styles.trackerIcon,
                   {
-                    backgroundColor:
-                      `${tracker.color}18`,
-                    borderColor:
-                      `${tracker.color}35`,
+                    backgroundColor: `${tracker.color}18`,
+                    borderColor: `${tracker.color}35`,
                   },
                 ]}
               >
                 <Ionicons
-                  name={
-                    tracker.icon ||
-                    "sparkles-outline"
-                  }
+                  name={tracker.icon || "sparkles-outline"}
                   size={21}
                   color={tracker.color}
                 />
@@ -235,17 +178,12 @@ export default function HomeScreen() {
 
               <View style={styles.trackerContent}>
                 <View style={styles.titleRow}>
-                  <Text
-                    style={styles.title}
-                    numberOfLines={1}
-                  >
+                  <Text style={styles.title} numberOfLines={1}>
                     {tracker.name}
                   </Text>
 
                   {tracker.category && (
-                    <Text style={styles.category}>
-                      {tracker.category}
-                    </Text>
+                    <Text style={styles.category}>{tracker.category}</Text>
                   )}
                 </View>
 
@@ -264,15 +202,9 @@ export default function HomeScreen() {
                 <View style={styles.gridContainer}>
                   <Grid
                     groups={[
-                      Array.from(
-                        { length: 7 },
-                        (_, index) => ({
-                          fill:
-                            index === 6 && done
-                              ? tracker.color
-                              : "#242428",
-                        }),
-                      ),
+                      Array.from({ length: 7 }, (_, index) => ({
+                        fill: index === 6 && done ? tracker.color : "#242428",
+                      })),
                     ]}
                     direction="rows"
                     size={11}
@@ -285,27 +217,16 @@ export default function HomeScreen() {
                 style={[
                   styles.actionButton,
                   done && {
-                    backgroundColor:
-                      tracker.color,
+                    backgroundColor: tracker.color,
                   },
                 ]}
                 onPress={(event) => {
                   event.stopPropagation();
 
                   if (tracker.type === "yesno") {
-                    setEntry(
-                      tracker.id,
-                      today,
-                      done ? undefined : 1,
-                    );
-                  } else if (
-                    tracker.type === "count"
-                  ) {
-                    setEntry(
-                      tracker.id,
-                      today,
-                      (value || 0) + 1,
-                    );
+                    setEntry(tracker.id, today, done ? undefined : 1);
+                  } else if (tracker.type === "count") {
+                    setEntry(tracker.id, today, (value || 0) + 1);
                   } else {
                     Alert.alert(
                       "P&L Tracker",
@@ -323,9 +244,7 @@ export default function HomeScreen() {
                         : "ellipse-outline"
                   }
                   size={22}
-                  color={
-                    done ? "#000" : "#777"
-                  }
+                  color={done ? "#000" : "#777"}
                 />
               </Pressable>
             </Pressable>
@@ -334,17 +253,10 @@ export default function HomeScreen() {
       </ScrollView>
 
       <Pressable
-        style={({ pressed }) => [
-          styles.fab,
-          pressed && styles.fabPressed,
-        ]}
+        style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
         onPress={() => setAdding(true)}
       >
-        <Ionicons
-          name="add"
-          size={28}
-          color="#000"
-        />
+        <Ionicons name="add" size={28} color="#000" />
       </Pressable>
 
       <TrackerModal
@@ -358,9 +270,7 @@ export default function HomeScreen() {
 
       <TrackerActionModal
         visible={actionVisible}
-        trackerName={
-          selectedTracker?.name || ""
-        }
+        trackerName={selectedTracker?.name || ""}
         onClose={closeActionModal}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -370,29 +280,18 @@ export default function HomeScreen() {
 }
 
 type SuggestionProps = {
-  icon: React.ComponentProps<
-    typeof Ionicons
-  >["name"];
+  icon: React.ComponentProps<typeof Ionicons>["name"];
   title: string;
 };
 
-function Suggestion({
-  icon,
-  title,
-}: SuggestionProps) {
+function Suggestion({ icon, title }: SuggestionProps) {
   return (
     <View style={styles.suggestion}>
       <View style={styles.suggestionIcon}>
-        <Ionicons
-          name={icon}
-          size={16}
-          color="#999"
-        />
+        <Ionicons name={icon} size={16} color="#999" />
       </View>
 
-      <Text style={styles.suggestionText}>
-        {title}
-      </Text>
+      <Text style={styles.suggestionText}>{title}</Text>
     </View>
   );
 }
@@ -481,7 +380,7 @@ const styles = StyleSheet.create({
     color: "#777",
     fontSize: 13,
     lineHeight: 20,
-    
+
     maxWidth: 330,
     marginTop: 8,
   },

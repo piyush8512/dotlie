@@ -43,3 +43,4 @@ Then `npx expo start --dev-client` and open the installed app.
 - The wallpaper refreshes when the app is opened/used. Midnight refresh and notification-button logging need a background task (next step).
 - Logging is for today only (no backfill UI yet).
 - Test on your phone brand (Samsung/Xiaomi may treat lock-only wallpapers differently).
+# dotlie
