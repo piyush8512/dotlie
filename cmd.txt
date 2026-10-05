@@ -1,1 +1,4 @@
 pnpm dlx eas-cli build --platform android --profile preview
+
+
+eas update --channel preview --environment preview --message "OTA "

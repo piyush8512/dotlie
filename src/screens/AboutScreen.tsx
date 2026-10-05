@@ -9,16 +9,27 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { LATEST_VERSION } from "../lib/changelog";
+import { LAST_SEEN_VERSION_KEY } from "../lib/whatsNew";
 
-const APP_VERSION = "1.0.0";
+const APP_VERSION = LATEST_VERSION;
 
 export default function AboutScreen() {
   const router = useRouter();
+  const [lastSeenVersion, setLastSeenVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem(LAST_SEEN_VERSION_KEY).then(setLastSeenVersion);
+  }, []);
+
+  const hasNewUpdate =
+    lastSeenVersion !== null && lastSeenVersion !== LATEST_VERSION;
 
   const openEmail = async () => {
-    const url =
-      "mailto:support@dotly.app?subject=Dotly%20Support";
+    const url = "mailto:support@dotly.app?subject=Dotly%20Support";
 
     const supported = await Linking.canOpenURL(url);
 
@@ -40,8 +51,7 @@ export default function AboutScreen() {
   };
 
   const sendFeedback = async () => {
-    const url =
-      "mailto:feedback@dotly.app?subject=Dotly%20Feedback";
+    const url = "mailto:feedback@dotly.app?subject=Dotly%20Feedback";
 
     try {
       await Linking.openURL(url);
@@ -58,10 +68,7 @@ export default function AboutScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </Pressable>
 
@@ -82,13 +89,9 @@ export default function AboutScreen() {
 
           <Text style={styles.appName}>Dotly</Text>
 
-          <Text style={styles.tagline}>
-            Your personal productivity space
-          </Text>
+          <Text style={styles.tagline}>Your personal productivity space</Text>
 
-          <Text style={styles.version}>
-            Version {APP_VERSION}
-          </Text>
+          <Text style={styles.version}>Version {APP_VERSION}</Text>
         </View>
 
         {/* About */}
@@ -96,9 +99,19 @@ export default function AboutScreen() {
 
         <View style={styles.card}>
           <Text style={styles.description}>
-            Dotly helps you organize your trackers, wallpapers,
-            and personal productivity in one simple place.
+            Dotly helps you organize your trackers, wallpapers, and personal
+            productivity in one simple place.
           </Text>
+
+          <Divider />
+
+          <AboutRow
+            icon="sparkles-outline"
+            title="Update history"
+            subtitle="See what is new in Dotly"
+            onPress={() => router.push("/update-history")}
+            showBadge={hasNewUpdate}
+          />
         </View>
 
         {/* Support */}
@@ -178,13 +191,9 @@ export default function AboutScreen() {
         <View style={styles.footer}>
           <Text style={styles.footerName}>Piyush</Text>
 
-          <Text style={styles.footerVersion}>
-            Version {APP_VERSION}
-          </Text>
+          <Text style={styles.footerVersion}>Version {APP_VERSION}</Text>
 
-          <Text style={styles.copyright}>
-            Made with care for Dotly
-          </Text>
+          <Text style={styles.copyright}>Made with care for Dotly</Text>
         </View>
       </ScrollView>
     </View>
@@ -201,6 +210,7 @@ type AboutRowProps = {
   subtitle: string;
   onPress: () => void;
   hideArrow?: boolean;
+  showBadge?: boolean;
 };
 
 function AboutRow({
@@ -209,13 +219,11 @@ function AboutRow({
   subtitle,
   onPress,
   hideArrow = false,
+  showBadge = false,
 }: AboutRowProps) {
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.row,
-        pressed && styles.rowPressed,
-      ]}
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       onPress={onPress}
     >
       <View style={styles.iconContainer}>
@@ -228,13 +236,9 @@ function AboutRow({
         <Text style={styles.rowSubtitle}>{subtitle}</Text>
       </View>
 
-      {!hideArrow && (
-        <Ionicons
-          name="chevron-forward"
-          size={18}
-          color="#555"
-        />
-      )}
+      {showBadge && <Text style={styles.newBadge}>NEW</Text>}
+
+      {!hideArrow && <Ionicons name="chevron-forward" size={18} color="#555" />}
     </Pressable>
   );
 }
@@ -393,6 +397,18 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 12,
     marginTop: 3,
+  },
+
+  newBadge: {
+    color: "#4ade80",
+    borderWidth: 1,
+    borderColor: "#28663e",
+    borderRadius: 6,
+    fontSize: 10,
+    fontWeight: "700",
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    marginRight: 10,
   },
 
   divider: {

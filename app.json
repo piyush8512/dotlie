@@ -2,7 +2,7 @@
   "expo": {
     "name": "Dotlie",
     "slug": "dotly",
-    "version": "1.0.0",
+   "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#000000",
@@ -28,7 +28,8 @@
           "imageWidth": 200,
           "resizeMode": "contain"
         }
-      ]
+      ],
+      "expo-notifications"
     ],
     "extra": {
       "router": {

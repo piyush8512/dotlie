@@ -43,4 +43,32 @@ Then `npx expo start --dev-client` and open the installed app.
 - The wallpaper refreshes when the app is opened/used. Midnight refresh and notification-button logging need a background task (next step).
 - Logging is for today only (no backfill UI yet).
 - Test on your phone brand (Samsung/Xiaomi may treat lock-only wallpapers differently).
+
+## Release
+
+For each release, bump the Expo version in `app.json` and add a matching entry
+at the top of `src/lib/changelog.ts`. Commit the changes and tag the release:
+
+```bash
+git commit -am "Release v1.1.0"
+git tag v1.1.0
+git push --tags
+```
+
+For JavaScript-only changes, publish an OTA update on the production channel:
+
+```bash
+eas update --channel production
+```
+
+Changes to the lock-screen module or other native dependencies require a new
+Android build and Play Store submission:
+
+```bash
+eas build -p android --profile production
+```
+
+The app uses `runtimeVersion: { "policy": "appVersion" }`, so native changes
+must also bump the version in `app.json`.
+
 # dotlie
