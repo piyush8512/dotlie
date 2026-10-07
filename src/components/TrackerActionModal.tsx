@@ -58,7 +58,7 @@ export default function TrackerActionModal({
 
               <View style={styles.optionContent}>
                 <Text style={styles.optionTitle}>
-                  Edit tracker
+                  Edit
                 </Text>
 
           

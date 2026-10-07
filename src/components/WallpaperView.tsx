@@ -158,6 +158,7 @@ export default function WallpaperView({
         >
           {dots.map((dot, index) => {
             const filled = isFilled(dot);
+            const color = dot?.fill || dotColor;
 
             const column = index % actualColumns;
 
@@ -172,9 +173,10 @@ export default function WallpaperView({
                   borderRadius: actualSize / 2,
                   marginRight: column === actualColumns - 1 ? 0 : actualGap,
                   marginBottom: row === rows - 1 ? 0 : actualGap,
-                  backgroundColor: filled ? dotColor : "#151515",
+                  backgroundColor: filled ? color : "#151515",
+                  opacity: filled ? (dot.alpha ?? 1) : 1,
                   borderWidth: 1,
-                  borderColor: filled ? dotColor : "#292929",
+                  borderColor: filled ? color : "#292929",
                 }}
               />
             );

@@ -61,13 +61,32 @@ export function isDone(tracker: Tracker, value: number) {
   return tracker.type === 'money' ? value !== 0 : tracker.type === 'count' ? value >= tracker.goal : value > 0;
 }
 
+export function intensityFor(value: number, values: number[]) {
+  if (value === 0) return 0;
+  const maximum = Math.max(...values.map((item) => Math.abs(item)), 1);
+  return 0.25 + (Math.abs(value) / maximum) * 0.75;
+}
+
+export function entryColor(tracker: Tracker, value: number) {
+  if (tracker.type === 'money') return value < 0 ? RED : GREEN;
+  return tracker.color;
+}
+
 export function buildGroups(state: DotlyState, view: 'month' | 'year') {
   const days = view === 'month' ? 30 : 365;
-  const groups = state.trackers.map((tracker) => Array.from({ length: days }, (_, index) => {
-    const date = new Date(); date.setDate(date.getDate() - (days - index - 1));
-    const value = state.entries[tracker.id]?.[todayStr(date)];
-    return { fill: value === undefined ? '#1C1C20' : tracker.type === 'money' ? (value >= 0 ? GREEN : RED) : tracker.color, alpha: value === undefined ? 1 : isDone(tracker, value) ? 1 : 0.35 };
-  }));
+  const groups = state.trackers.map((tracker) => {
+    const values = Array.from({ length: days }, (_, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (days - index - 1));
+      return state.entries[tracker.id]?.[todayStr(date)];
+    });
+    const presentValues = values.filter((value): value is number => value !== undefined);
+
+    return values.map((value) => ({
+      fill: value === undefined ? '#1C1C20' : entryColor(tracker, value),
+      alpha: value === undefined ? 1 : tracker.type === 'yesno' ? 1 : intensityFor(value, presentValues),
+    }));
+  });
   return { groups, direction: 'rows' as const };
 }
 

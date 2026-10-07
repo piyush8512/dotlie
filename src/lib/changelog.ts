@@ -8,8 +8,21 @@ export type Release = {
 };
 
 export const CHANGELOG: Release[] = [
+
+    {
+    version: "1.0.3",
+    date: "2026-10-07",
+    title: "Tracker & Wallpaper improvements",
+    changes: [
+      { type: "new", text: "Added manual value entry with relative intensity" },
+      { type: "new", text: "Dynamic color intensity of task" },
+      { type: "improved", text: "edit tracker modal" },
+      { type: "fixed", text: "Wallpaper structure and unused code cleanup" },
+    ],
+  },
   {
-    version: "1.0.0",
+
+    version: "1.0.2",
     date: "2026-10-05",
     title: "Daily reminders",
     changes: [
@@ -19,7 +32,7 @@ export const CHANGELOG: Release[] = [
     ],
   },
   {
-    version: "1.0.0",
+    version: "1.0.1",
     date: "2026-10-05",
     title: "Update history & polish",
     changes: [
@@ -35,5 +48,6 @@ export const CHANGELOG: Release[] = [
     changes: [{ type: "new", text: "Yes/No, Count and P&L trackers" }],
   },
 ];
+
 
 export const LATEST_VERSION = CHANGELOG[0].version;

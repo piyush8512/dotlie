@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,18 +11,29 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 import { useDotly } from "../context/DotlyProvider";
-import { isDone, streakFor, todayStr } from "../lib/lib";
+import {
+  entryColor,
+  intensityFor,
+  isDone,
+  streakFor,
+  todayStr,
+} from "../lib/lib";
 
 import Grid from "../components/Grid";
 import TrackerModal from "../components/TrackerModal";
 import TrackerActionModal from "../components/TrackerActionModal";
+import DailyValueModal from "../components/DailyValueModal";
 
 export default function HomeScreen() {
-  const { state, addTracker, removeTracker, setEntry } = useDotly();
+  // 1. Destructure updateTracker from context (if available)
+  const { state, addTracker, updateTracker, removeTracker, setEntry } = useDotly();
 
   const [adding, setAdding] = useState(false);
   const [selectedTracker, setSelectedTracker] = useState<any>(null);
+  // 2. New state for tracking which item is being edited
+  const [editingTracker, setEditingTracker] = useState<any>(null);
   const [actionVisible, setActionVisible] = useState(false);
+  const [valueTracker, setValueTracker] = useState<any>(null);
 
   const router = useRouter();
 
@@ -38,6 +48,10 @@ export default function HomeScreen() {
     greeting = "Good morning";
   } else if (hour < 17) {
     greeting = "Good afternoon";
+  } else if (hour < 20) {
+    greeting = "Good evening";
+  } else if (hour < 24) {
+    greeting = "Good night";
   }
 
   const handleTrackerPress = (tracker: any) => {
@@ -59,25 +73,12 @@ export default function HomeScreen() {
     setSelectedTracker(null);
   };
 
+  // 3. Updated handleEdit function
   const handleEdit = () => {
-    setActionVisible(false);
-
-    if (!selectedTracker) {
-      return;
+    if (selectedTracker) {
+      setEditingTracker(selectedTracker);
     }
-
-    Alert.alert(
-      "Edit tracker",
-      `Editing "${selectedTracker.name}" will be connected next.`,
-      [
-        {
-          text: "OK",
-          onPress: () => {
-            setSelectedTracker(null);
-          },
-        },
-      ],
-    );
+    setActionVisible(false);
   };
 
   const handleDelete = () => {
@@ -87,6 +88,14 @@ export default function HomeScreen() {
 
     removeTracker(selectedTracker);
     closeActionModal();
+  };
+
+  const openValueModal = (tracker: any) => {
+    setValueTracker(tracker);
+  };
+
+  const closeValueModal = () => {
+    setValueTracker(null);
   };
 
   return (
@@ -122,19 +131,12 @@ export default function HomeScreen() {
 
             <View style={styles.suggestions}>
               <Suggestion icon="water-outline" title="Drink water" />
-
               <Suggestion icon="book-outline" title="Read" />
-
               <Suggestion icon="barbell-outline" title="Exercise" />
-
               <Suggestion icon="leaf-outline" title="Meditate" />
-
               <Suggestion icon="logo-github" title="GitHub" />
-
               <Suggestion icon="code-slash-outline" title="Keep coding" />
-
               <Suggestion icon="walk-outline" title="Go for a walk" />
-
               <Suggestion icon="moon-outline" title="Sleep on time" />
             </View>
 
@@ -148,6 +150,14 @@ export default function HomeScreen() {
           const value = state.entries[tracker.id]?.[today];
 
           const done = value !== undefined && isDone(tracker, value);
+          const recentValues = Array.from({ length: 7 }, (_, index) => {
+            const date = new Date();
+            date.setDate(date.getDate() - (6 - index));
+            return state.entries[tracker.id]?.[todayStr(date)];
+          });
+          const presentValues = recentValues.filter(
+            (item): item is number => item !== undefined,
+          );
 
           return (
             <Pressable
@@ -195,15 +205,24 @@ export default function HomeScreen() {
                     : tracker.type === "count"
                       ? `${value || 0} / ${tracker.goal}`
                       : value === undefined
-                        ? "No P&L today"
+                        ? "No value today"
                         : `${value > 0 ? "+" : ""}${value}`}
                 </Text>
 
                 <View style={styles.gridContainer}>
                   <Grid
                     groups={[
-                      Array.from({ length: 7 }, (_, index) => ({
-                        fill: index === 6 && done ? tracker.color : "#242428",
+                      recentValues.map((item) => ({
+                        fill:
+                          item === undefined || item === 0
+                            ? "#242428"
+                            : entryColor(tracker, item),
+                        alpha:
+                          item === undefined || item === 0
+                            ? 1
+                            : tracker.type === "yesno"
+                              ? 1
+                              : intensityFor(item, presentValues),
                       })),
                     ]}
                     direction="rows"
@@ -217,7 +236,10 @@ export default function HomeScreen() {
                 style={[
                   styles.actionButton,
                   done && {
-                    backgroundColor: tracker.color,
+                    backgroundColor:
+                      tracker.type === "money" && value !== undefined
+                        ? entryColor(tracker, value)
+                        : tracker.color,
                   },
                 ]}
                 onPress={(event) => {
@@ -226,18 +248,19 @@ export default function HomeScreen() {
                   if (tracker.type === "yesno") {
                     setEntry(tracker.id, today, done ? undefined : 1);
                   } else if (tracker.type === "count") {
-                    setEntry(tracker.id, today, (value || 0) + 1);
+                    const nextValue = Math.min((value || 0) + 1, tracker.goal);
+
+                    if ((value || 0) < tracker.goal) {
+                      setEntry(tracker.id, today, nextValue);
+                    }
                   } else {
-                    Alert.alert(
-                      "P&L Tracker",
-                      "Use the Wallpaper tab to review P&L import.",
-                    );
+                    openValueModal(tracker);
                   }
                 }}
               >
                 <Ionicons
                   name={
-                    tracker.type === "count"
+                    tracker.type === "count" || tracker.type === "money"
                       ? "add"
                       : done
                         ? "checkmark"
@@ -259,12 +282,24 @@ export default function HomeScreen() {
         <Ionicons name="add" size={28} color="#000" />
       </Pressable>
 
+      {/* 4. Updated TrackerModal render logic */}
       <TrackerModal
-        visible={adding}
-        onClose={() => setAdding(false)}
-        onSave={(tracker: any) => {
-          addTracker(tracker);
+        visible={adding || editingTracker !== null}
+        tracker={editingTracker}
+        onClose={() => {
           setAdding(false);
+          setEditingTracker(null);
+          setSelectedTracker(null);
+        }}
+        onSave={(trackerData: any) => {
+          if (editingTracker) {
+            updateTracker({ ...editingTracker, ...trackerData });
+          } else {
+            addTracker(trackerData);
+          }
+          setAdding(false);
+          setEditingTracker(null);
+          setSelectedTracker(null);
         }}
       />
 
@@ -274,6 +309,21 @@ export default function HomeScreen() {
         onClose={closeActionModal}
         onEdit={handleEdit}
         onDelete={handleDelete}
+      />
+
+      <DailyValueModal
+        visible={valueTracker !== null}
+        trackerName={valueTracker?.name || ""}
+        initialValue={
+          valueTracker ? state.entries[valueTracker.id]?.[today] : undefined
+        }
+        onClose={closeValueModal}
+        onSave={(nextValue) => {
+          if (valueTracker) {
+            setEntry(valueTracker.id, today, nextValue);
+          }
+          closeValueModal();
+        }}
       />
     </SafeAreaView>
   );
@@ -301,7 +351,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
   },
-
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -310,53 +359,44 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 12,
   },
-
   greetingContainer: {
     flex: 1,
     paddingRight: 15,
   },
-
   greeting: {
     color: "#fff",
     fontSize: 20,
     fontWeight: "700",
   },
-
   subtitle: {
     color: "#777",
     fontSize: 13,
     marginTop: 5,
   },
-
   streakContainer: {
     alignItems: "flex-end",
   },
-
   streak: {
     color: "#FFB020",
     fontSize: 34,
     fontWeight: "800",
     lineHeight: 38,
   },
-
   streakLabel: {
     color: "#777",
     fontSize: 11,
     marginTop: 1,
   },
-
   content: {
     padding: 20,
     paddingBottom: 180,
     flexGrow: 1,
   },
-
   emptyContainer: {
     alignItems: "center",
     paddingTop: 200,
     paddingBottom: 30,
   },
-
   emptyIcon: {
     width: 64,
     height: 64,
@@ -368,23 +408,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 18,
   },
-
   emptyTitle: {
     color: "#fff",
     fontSize: 21,
     fontWeight: "700",
     textAlign: "center",
   },
-
   emptyDescription: {
     color: "#777",
     fontSize: 13,
     lineHeight: 20,
-
     maxWidth: 330,
     marginTop: 8,
   },
-
   suggestionTitle: {
     textAlign: "center",
     color: "#555",
@@ -394,7 +430,6 @@ const styles = StyleSheet.create({
     marginTop: 32,
     marginBottom: 12,
   },
-
   suggestions: {
     width: "100%",
     flexDirection: "row",
@@ -402,7 +437,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-
   suggestion: {
     flexDirection: "row",
     alignItems: "center",
@@ -413,22 +447,18 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     paddingHorizontal: 11,
   },
-
   suggestionIcon: {
     marginRight: 7,
   },
-
   suggestionText: {
     color: "#888",
     fontSize: 12,
   },
-
   emptyHint: {
     color: "#444",
     fontSize: 12,
     marginTop: 25,
   },
-
   card: {
     flexDirection: "row",
     alignItems: "center",
@@ -440,12 +470,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 12,
   },
-
   cardPressed: {
     backgroundColor: "#101012",
     transform: [{ scale: 0.99 }],
   },
-
   trackerIcon: {
     width: 44,
     height: 44,
@@ -455,24 +483,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 13,
   },
-
   trackerContent: {
     flex: 1,
     minWidth: 0,
   },
-
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
   },
-
   title: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
     flexShrink: 1,
   },
-
   category: {
     color: "#555",
     fontSize: 9,
@@ -480,17 +504,14 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
-
   status: {
     color: "#777",
     fontSize: 12,
     marginTop: 3,
   },
-
   gridContainer: {
     marginTop: 9,
   },
-
   actionButton: {
     width: 48,
     height: 48,
@@ -500,7 +521,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginLeft: 12,
   },
-
   fab: {
     position: "absolute",
     right: 20,
@@ -520,7 +540,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-
   fabPressed: {
     transform: [{ scale: 0.94 }],
     opacity: 0.85,

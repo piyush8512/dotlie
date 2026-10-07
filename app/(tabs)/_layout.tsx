@@ -6,7 +6,7 @@ export default function TabsLayout() {
   const router = useRouter();
 
   const active = pathname.endsWith("/wallpaper")
-    ? "wall"
+    ? "wallpaper"
     : pathname.endsWith("/profile")
       ? "profile"
       : pathname.endsWith("/task")
@@ -14,14 +14,12 @@ export default function TabsLayout() {
         : "home";
 
   const handleChange = (key: string) => {
-    console.log("Navigation:", key);
-
     switch (key) {
       case "home":
         router.push("/(tabs)");
         break;
 
-      case "wall":
+      case "wallpaper":
         router.push("/(tabs)/wallpaper");
         break;
 
@@ -88,7 +86,7 @@ export default function TabsLayout() {
             icon: "checkbox-outline",
           },
           {
-            key: "wall",
+            key: "wallpaper",
             label: "Wallpaper",
             icon: "image-outline",
           },

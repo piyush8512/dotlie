@@ -10,6 +10,7 @@ type ContextValue = {
   setEntry: (id: string, date: string, value?: number) => void;
   setSetting: (key: string, value: any) => void;
   addTracker: (tracker: Tracker) => void;
+  updateTracker: (tracker: Tracker) => void;
   removeTracker: (tracker: Tracker) => void;
 };
 const DotlyContext = createContext<ContextValue | null>(null);
@@ -59,6 +60,13 @@ export function DotlyProvider({ children }: { children: React.ReactNode }) {
             current.trackers.length === 0 && tracker.type === "money"
               ? { ...current.settings, target: tracker.id }
               : current.settings,
+        })),
+      updateTracker: (tracker) =>
+        setState((current) => ({
+          ...current,
+          trackers: current.trackers.map((item) =>
+            item.id === tracker.id ? tracker : item,
+          ),
         })),
       removeTracker: (tracker) =>
         setState((current) => {

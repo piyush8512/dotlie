@@ -16,44 +16,23 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { captureRef } from "react-native-view-shot";
 
-import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
-
 import WallpaperView from "../../src/components/WallpaperView";
 import TimeWallpaperView from "../../src/components/TimeWallpaperView";
 
 import { useDotly } from "../../src/context/DotlyProvider";
 
-import { buildGroups, parseCsv, streakFor } from "../../src/lib/lib";
+import { buildGroups, streakFor } from "../../src/lib/lib";
+import { DOT_COLORS, WallpaperMode, Period, YearInfo, NumberSize, DotSize  } from "../../src/lib/wallpaperConfig";
 
 import {
   setLockWallpaper as applyNativeWallpaper,
   wallpaperAvailable,
 } from "../../src/services/wallpaper";
 
-type WallpaperMode = "tracker" | "time";
 
-type Period = "month" | "year";
-
-type YearLayout = "grid" | "vertical" | "horizontal";
-
-type YearInfo = "none" | "days" | "daysPercent" | "full";
-
-type NumberSize = "small" | "medium" | "large";
-
-type DotSize = "small" | "medium" | "large";
-
-const DOT_COLORS = [
-  "#FFB020",
-  "#2BFF88",
-  "#4DA3FF",
-  "#FF6B9A",
-  "#B28CFF",
-  "#FFFFFF",
-];
 
 export default function WallpaperScreen() {
-  const { state, setSetting, setEntry } = useDotly();
+  const { state, setSetting } = useDotly();
 
   const ref = useRef<View>(null);
 
@@ -70,40 +49,18 @@ export default function WallpaperScreen() {
   const timePeriod: Period =
     state.settings.timePeriod === "year" ? "year" : "month";
 
-  /*
-   * ============================================
-   * TRACKER WALLPAPER COLOR
-   * ============================================
-   */
 
   const trackerDotColor =
     typeof state.settings.trackerDotColor === "string"
       ? state.settings.trackerDotColor
       : "#FFB020";
 
-  /*
-   * ============================================
-   * TIME WALLPAPER COLOR
-   * ============================================
-   */
-
   const timeDotColor =
     typeof state.settings.timeDotColor === "string"
       ? state.settings.timeDotColor
       : "#FFB020";
 
-  /*
-   * ============================================
-   * YEAR CUSTOMIZATION
-   * ============================================
-   */
 
-  const yearLayout: YearLayout =
-    state.settings.yearLayout === "vertical"
-      ? "vertical"
-      : state.settings.yearLayout === "horizontal"
-        ? "horizontal"
-        : "grid";
 
   const yearInfo: YearInfo =
     state.settings.yearInfo === "days"
@@ -128,11 +85,6 @@ export default function WallpaperScreen() {
         ? "large"
         : "medium";
 
-  /*
-   * ============================================
-   * TRACKER DATA
-   * ============================================
-   */
 
   const { groups, direction } = buildGroups(state, trackerPeriod);
 
@@ -141,12 +93,6 @@ export default function WallpaperScreen() {
       ? "All"
       : state.trackers.find((item) => item.id === state.settings.target)
           ?.name || "";
-
-  /*
-   * ============================================
-   * WALLPAPER RENDERER
-   * ============================================
-   */
 
   const renderWallpaper = (width: number, height: number) => {
     if (wallpaperMode === "time") {
@@ -179,11 +125,6 @@ export default function WallpaperScreen() {
     );
   };
 
-  /*
-   * ============================================
-   * APPLY WALLPAPER
-   * ============================================
-   */
 
   const apply = async () => {
     if (!wallpaperAvailable) {
@@ -217,45 +158,8 @@ export default function WallpaperScreen() {
     }
   };
 
-  /*
-   * ============================================
-   * CSV IMPORT
-   * ============================================
-   */
-
-  const importCsv = async (tracker: any) => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: "*/*",
-        copyToCacheDirectory: true,
-      });
-
-      if (result.canceled) {
-        return;
-      }
-
-      const text = await FileSystem.readAsStringAsync(result.assets[0].uri);
-
-      const days = parseCsv(text);
-
-      Object.entries(days).forEach(([date, value]) => {
-        setEntry(tracker.id, date, value as number);
-      });
-
-      Alert.alert(
-        "Imported",
-        `${Object.keys(days).length} trading days added.`,
-      );
-    } catch (error: any) {
-      Alert.alert("Import failed", error?.message || String(error));
-    }
-  };
-
   return (
     <SafeAreaView style={styles.root} edges={["top", "left", "right"]}>
-      {/* ================================= */}
-      {/* HIDDEN CAPTURE                     */}
-      {/* ================================= */}
 
       <View
         ref={ref}
@@ -278,10 +182,6 @@ export default function WallpaperScreen() {
         <Text style={styles.title}>Wallpaper</Text>
 
 
-
-        {/* ================================= */}
-        {/* MODE                               */}
-        {/* ================================= */}
 
         <Text style={styles.sectionLabel}>MODE</Text>
 
@@ -320,11 +220,6 @@ export default function WallpaperScreen() {
             </Text>
           </Pressable>
         </View>
-
-        {/* ================================= */}
-        {/* TRACKER MODE                       */}
-        {/* ================================= */}
-
         {wallpaperMode === "tracker" && (
           <>
             <Text style={styles.sectionLabel}>SHOW</Text>
@@ -388,10 +283,6 @@ export default function WallpaperScreen() {
           </>
         )}
 
-        {/* ================================= */}
-        {/* TIME MODE                          */}
-        {/* ================================= */}
-
         {wallpaperMode === "time" && (
           <>
             <Text style={styles.sectionLabel}>PERIOD</Text>
@@ -404,10 +295,6 @@ export default function WallpaperScreen() {
               ]}
               onChange={(value) => setSetting("timePeriod", value)}
             />
-
-            {/* ============================= */}
-            {/* YEAR CUSTOMIZATION             */}
-            {/* ============================= */}
 
             {timePeriod === "year" && (
               <>
@@ -463,19 +350,12 @@ export default function WallpaperScreen() {
           </>
         )}
 
-        {/* ================================= */}
-        {/* PREVIEW                            */}
-        {/* ================================= */}
-
         <Text style={styles.sectionLabel}>PREVIEW</Text>
 
         <View style={styles.preview}>
           {renderWallpaper(screen.width * 0.55, screen.height * 0.55)}
         </View>
 
-        {/* ================================= */}
-        {/* APPLY                              */}
-        {/* ================================= */}
 
         <Pressable
           style={[styles.button, busy && styles.buttonDisabled]}
@@ -486,29 +366,10 @@ export default function WallpaperScreen() {
             {busy ? "Applying..." : "Apply to lock screen"}
           </Text>
         </Pressable>
-
-        {/* ================================= */}
-        {/* CSV                                */}
-        {/* ================================= */}
-
-        {wallpaperMode === "tracker" &&
-          state.trackers
-            .filter((item) => item.type === "money")
-            .map((tracker) => (
-              <Pressable key={tracker.id} onPress={() => importCsv(tracker)}>
-                <Text style={styles.link}>
-                  Import broker CSV for {tracker.name}
-                </Text>
-              </Pressable>
-            ))}
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-/* ================================================= */
-/* SEGMENTED CONTROL                                  */
-/* ================================================= */
 
 function Segmented({
   value,
@@ -545,9 +406,6 @@ function Segmented({
   );
 }
 
-/* ================================================= */
-/* COLOR PICKER                                       */
-/* ================================================= */
 
 function ColorPicker({
   value,
@@ -645,7 +503,7 @@ const styles = StyleSheet.create({
   modeTitle: {
     color: "#ddd",
     fontSize: 15,
-    
+
     fontWeight: "700",
   },
 
